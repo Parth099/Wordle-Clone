@@ -1,10 +1,13 @@
 import React from "react";
 import "./App.css";
+import NavBar from "./components/header";
+
+//components
 
 function App() {
     return (
-        <div className="App">
-            <h1>Lmaoo</h1>
+        <div className="main">
+            <NavBar name="Wordle" />
         </div>
     );
 }

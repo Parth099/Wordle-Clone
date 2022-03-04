@@ -4,12 +4,16 @@ import { useEffect } from "react";
 
 function GuessBox() {
     const KeyDownEvent = function (e: KeyboardEvent) {
-        const keypress = e.key.toLowerCase();
+        if (e.key === "Enter") {
+            console.log("enter");
+            //do something
+        }
         if (!/^[a-z]$/i.test(e.key)) {
             //regex test for alphabet, i - ignorecase
             return;
         }
-        console.log(keypress);
+
+        const keypress = e.key.toLowerCase();
     };
 
     //runs once on mount (empty deps), adds keypress listener

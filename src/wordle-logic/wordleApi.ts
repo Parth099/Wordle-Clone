@@ -8,6 +8,8 @@ export default class WordleApi {
     private readonly targetWord: string;
     public readonly WORDLEN: number;
 
+    private readonly delimiter: string = "_";
+
     //employ singleton pattern? maybe later
     constructor(target: string) {
         this.targetWord = target.toLowerCase();
@@ -19,10 +21,10 @@ export default class WordleApi {
     }
 
     /*
-        How this works: [v1]
-            Iteration 1 - 2: Mark off all correct words and remove the correct positions from the guess
-            
-            Iteration 3 : 
+        How this works: [v1][v2]
+            Iteration 1 : Mark off all correct words and remove the correct positions from the guess
+            ~
+            Iteration 2 : 
                 Check for misplacements by seeing if a valid index is present for a given present letter
                 in guess. If this letter is removed *once* from target 
                 
@@ -34,26 +36,19 @@ export default class WordleApi {
         //array can only hold 0, 1 or 2
         const checkedArr: Array<LetterStatus> = new Array(targetCopy.length).fill(LetterStatus.WRONG);
 
-        //collect correct letters 1st
+        let newCopy = "";
+        let newGuess = "";
+        //collect correct letters and remove them from the stage so we can detect misplacements
         for (let i = 0; i < this.WORDLEN; i++) {
             if (guess[i] === targetCopy[i]) {
                 checkedArr[i] = LetterStatus.CORRECT;
-            }
-        }
-
-        //guess and target letter replacement
-        let newCopy = "";
-        let newGuess = "";
-        for (let j = 0; j < this.WORDLEN; j++) {
-            if (checkedArr[j] === LetterStatus.CORRECT) {
-                newCopy += "_";
-                newGuess += "_";
+                newCopy += this.delimiter;
+                newGuess += this.delimiter;
             } else {
-                newCopy += targetCopy[j];
-                newGuess += guess[j];
+                newCopy += targetCopy[i];
+                newGuess += guess[i];
             }
         }
-
         //copied over new vars to make this easy to follow
         targetCopy = newCopy;
         guess = newGuess;
@@ -64,7 +59,7 @@ export default class WordleApi {
             //note LetterStatus.WRONG will skip over '_' (replacements)
             if (checkedArr[k] === LetterStatus.WRONG && targetCopy.indexOf(guess[k]) >= 0) {
                 //default (non regex) behavior of replace is replacement of first instance
-                targetCopy = targetCopy.replace(guess[k], "_");
+                targetCopy = targetCopy.replace(guess[k], this.delimiter);
                 checkedArr[k] = LetterStatus.MISPLACED;
             }
         }

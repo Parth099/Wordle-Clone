@@ -55,3 +55,25 @@ test(`T = "${target2}", G = "rupee"`, () => {
     const result = W2.checkAccuracy("rupee");
     expect(result).toEqual([2, 2, 2, 2, 2]);
 });
+
+//harder tests
+
+//T: balloon
+//all incorrect
+const target3 = "balloon";
+const W3 = new WordleApi(target3);
+
+test(`T = "${target3}", G = "nooball"`, () => {
+    const result = W3.checkAccuracy("nooball");
+    expect(result).toEqual([1, 1, 1, 1, 1, 1, 1]);
+});
+
+test(`T = "${target3}", G = "baboons"`, () => {
+    const result = W3.checkAccuracy("baboons");
+    expect(result).toEqual([2, 2, 0, 1, 2, 1, 0]);
+});
+
+test(`T = "${target3}", G = "twizzle"`, () => {
+    const result = W3.checkAccuracy("twizzle");
+    expect(result).toEqual([0, 0, 0, 0, 0, 1, 0]);
+});

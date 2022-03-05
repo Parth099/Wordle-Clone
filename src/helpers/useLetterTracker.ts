@@ -96,7 +96,8 @@ function _cementLayer(
     letterHistory: defaultObj<string>,
     accTracker: defaultObj<LetterStatus>,
     setAccTracker: setStateFunc<LetterStatus>,
-    matcher: (s: string) => LetterStatus[]
+    matcher: (s: string) => LetterStatus[],
+    layerMax: number
 ) {
     const isCompletedLayer = letterHistory[layer].indexOf(emptyString) === -1;
     if (!isCompletedLayer) return;
@@ -110,7 +111,12 @@ function _cementLayer(
     newAccTracker[layer] = [...usrValidity];
     setAccTracker(newAccTracker);
 
-    setLayer(layer + 1);
+    const userScore = usrValidity.reduce((prev, curr) => prev + curr, 0);
+    if (userScore === usrValidity.length * 2) {
+        setLayer(layerMax); //blocks user input after hitting max layer
+    } else {
+        setLayer(layer + 1);
+    }
 }
 
 //exposed functions ONLY for outside calling
@@ -130,15 +136,17 @@ function useLetterTracker(targetWord: string, layerMax: number) {
     const [layer, setLayer] = useState(0);
 
     function pushLetter(letter: string) {
+        if (layer === layerMax) return;
         _pushLetter(letter, layer, letterHistory, setLetterHistory);
     }
     function popLetter() {
+        if (layer === layerMax) return;
         _popLetter(layer, letterHistory, setLetterHistory);
     }
 
     function cementLayer() {
         if (layer === layerMax) return;
-        _cementLayer(layer, setLayer, letterHistory, accTracker, setAccTracker, matcher);
+        _cementLayer(layer, setLayer, letterHistory, accTracker, setAccTracker, matcher, layerMax);
     }
 
     //exposure

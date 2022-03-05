@@ -1,3 +1,4 @@
+import { type } from "@testing-library/user-event/dist/type";
 import { useEffect, useState } from "react";
 import useLetterTracker from "../helpers/useLetterTracker";
 
@@ -5,10 +6,11 @@ import useLetterTracker from "../helpers/useLetterTracker";
 
 function GuessBox() {
     //custom hook allows for a new abstraction layer
-    const { letterHistory, accTracker, pushLetter, popLetter, cementLayer } = useLetterTracker("array", 6);
+    const secretWord = "fortnite";
+    const numGuess = 6;
+    const { letterHistory, accTracker, pushLetter, popLetter, cementLayer } = useLetterTracker(secretWord.toLowerCase(), numGuess);
     //runs once on mount (empty deps), adds keypress listener
 
-    console.log(letterHistory, accTracker);
     useEffect(() => {
         const KeyDownEvent = function (e: KeyboardEvent) {
             if (e.key === "Enter") {
@@ -31,34 +33,48 @@ function GuessBox() {
         };
     }, [letterHistory, accTracker, pushLetter, popLetter, cementLayer]);
 
+    //render helpers
+    const getColorClass = (correctness: number) => {
+        let rval = "";
+        switch (correctness) {
+            case 0:
+                rval = "wrong";
+                break;
+            case 1:
+                rval = "misplaced";
+                break;
+
+            case 2:
+                rval = "correct";
+                break;
+            default:
+                break;
+        }
+
+        if (rval) {
+            return rval + " decided";
+        }
+        return rval;
+    };
+
     return (
         <div className="grid-container mx-auto w-min mt-4 px-9">
-            <div className="guess-box grid grid-cols-5 grid-rows-5 gap-2 w-[500px] h-[525px]">
-                <div>1</div>
-                <div>2</div>
-                <div>3</div>
-                <div>4</div>
-                <div>5</div>
-                <div>6</div>
-                <div>7</div>
-                <div>8</div>
-                <div>9</div>
-                <div>10</div>
-                <div>11</div>
-                <div>12</div>
-                <div>13</div>
-                <div>14</div>
-                <div>15</div>
-                <div>16</div>
-                <div>17</div>
-                <div>18</div>
-                <div>19</div>
-                <div>20</div>
-                <div>21</div>
-                <div>22</div>
-                <div>23</div>
-                <div>24</div>
-                <div>25</div>
+            <div className={`guess-box grid grid-cols-8 grid-rows-8 gap-2 w-[500px] h-[${100 * numGuess}px]`}>
+                {new Array(numGuess).fill(0).map(function (_, idx) {
+                    const board: JSX.Element[] = [];
+
+                    letterHistory[idx].forEach((value, sidx) => {
+                        board.push(
+                            <div className="square" key={sidx + "" + idx}>
+                                <div className={`content box ${getColorClass(accTracker[idx][sidx])}`}>
+                                    <span>{value.toUpperCase()}</span>
+                                </div>
+                            </div>
+                        );
+                    });
+
+                    return board;
+                })}
             </div>
         </div>
     );

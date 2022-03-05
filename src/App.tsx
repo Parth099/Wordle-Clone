@@ -7,10 +7,10 @@ import GuessBox from "./components/input-grid";
 
 function App() {
     return (
-        <div className="main">
+        <React.Fragment>
             <NavBar name="Wordle" />
             <GuessBox />
-        </div>
+        </React.Fragment>
     );
 }
 

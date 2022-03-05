@@ -101,6 +101,65 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
-.guess-box > div {
+.guess-box > div > div {
     border: 2px solid #3a3a3c;
+}
+
+.center-text {
+    display: flex;
+    justify-content: center; /* horizontal */
+    align-items: center; /* vertical */
+}
+
+.box {
+    @apply text-white text-5xl font-extrabold;
+}
+
+/* SOF */
+.square-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.square {
+    position: relative;
+    flex-basis: calc(33.333% - 10px);
+    margin: -3px;
+    border: 1px solid;
+    box-sizing: border-box;
+}
+
+.square::before {
+    content: "";
+    display: block;
+    padding-top: 100%;
+}
+
+.square .content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+
+    display: flex; /* added for centered text */
+    justify-content: center; /* added for centered text */
+    align-items: center; /* added for centered text */
+}
+/* SOF */
+
+
+.wrong {
+    background-color: #3a3a3c;
+}
+
+.misplaced {
+    background-color: #b59f3b;
+}
+
+.correct {
+    background-color: #538d4e;
+}
+.decided {
+    border: none !important;
 }

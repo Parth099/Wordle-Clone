@@ -27,6 +27,7 @@ import WordleApi from "../wordle-logic/wordleApi";
 
 
 */
+type setStateFunc<T> = React.Dispatch<React.SetStateAction<defaultObj<T>>>;
 
 enum LetterStatus {
     WRONG,
@@ -52,31 +53,72 @@ function genDefaultObject<T>(layerMax: number, arrLength: number, defaultValue: 
 }
 
 //we will assume that all exposed calls are VALID calls.
-function _pushLetter(
-    letter: string,
-    layer: number,
-    letterHistory: defaultObj<string>,
-    setLetterHistory: React.Dispatch<React.SetStateAction<defaultObj<string>>>
-) {
+function _pushLetter(letter: string, layer: number, letterHistory: defaultObj<string>, setLetterHistory: setStateFunc<string>) {
+    /*
+        finds a VALID spot on our current layer and pushes the letter updating the state
+    */
+
     const workingLayer = [...letterHistory[layer]];
     const firstOpenIndex = workingLayer.indexOf(emptyString);
     if (firstOpenIndex < 0) return; //no spots left to push
 
     workingLayer[firstOpenIndex] = letter;
     const newHistory = Object.assign({}, letterHistory);
-    newHistory[layer] = [...workingLayer];
+    newHistory[layer] = [...workingLayer]; //NTS : test w/o [...arr]
 
     setLetterHistory(newHistory);
 }
-function _popLetter(layer: number, letterHistory: defaultObj<string>, setLetterHistory: Function) {}
+function _popLetter(layer: number, letterHistory: defaultObj<string>, setLetterHistory: setStateFunc<string>) {
+    /*
+        attemps to find the last pushed letter by finding the lastest `emptyString`
+    */
 
-function _cementLayer(layer: number, setLayer: Function, accTracker: defaultObj<LetterStatus>, setAccTracker: Function, matcher: Function) {}
+    const workingLayer = [...letterHistory[layer]];
+    const lastOpenIndex = workingLayer.indexOf(emptyString);
+
+    if (lastOpenIndex === 0) return; //nothing to remove
+    if (lastOpenIndex === -1) {
+        workingLayer[workingLayer.length - 1] = emptyString;
+    } else {
+        //its not at the start or at the end
+        workingLayer[lastOpenIndex - 1] = emptyString; //set the prev index to empty
+    }
+
+    const newHistory = Object.assign({}, letterHistory);
+    newHistory[layer] = [...workingLayer]; //NTS : test w/o [...arr]
+
+    setLetterHistory(newHistory);
+}
+
+function _cementLayer(
+    layer: number,
+    setLayer: Function,
+    letterHistory: defaultObj<string>,
+    accTracker: defaultObj<LetterStatus>,
+    setAccTracker: setStateFunc<LetterStatus>,
+    matcher: (s: string) => LetterStatus[]
+) {
+    const isCompletedLayer = letterHistory[layer].indexOf(emptyString) === -1;
+    if (!isCompletedLayer) return;
+
+    //adds up the letters
+    const usrGuess = letterHistory[layer].reduce((prevLetter, currletter) => prevLetter + currletter, "");
+    const usrValidity = matcher(usrGuess);
+
+    //state setup
+    const newAccTracker = Object.assign({}, accTracker);
+    newAccTracker[layer] = [...usrValidity];
+    setAccTracker(newAccTracker);
+
+    setLayer(layer + 1);
+}
 
 //exposed functions ONLY for outside calling
 
 function useLetterTracker(targetWord: string, layerMax: number) {
+    //makes it so we cannot alter the api calls
     const API = new WordleApi(targetWord);
-    const matcher = API.checkAccuracy;
+    const matcher = API.checkAccuracy.bind(API);
 
     //correctness array
     const [accTracker, setAccTracker] = useState(genDefaultObject(layerMax, targetWord.length, emptyNumSpace));
@@ -91,12 +133,12 @@ function useLetterTracker(targetWord: string, layerMax: number) {
         _pushLetter(letter, layer, letterHistory, setLetterHistory);
     }
     function popLetter() {
-        return;
-        //_popLetter(layer, letterHistory, setLetterHistory);
+        _popLetter(layer, letterHistory, setLetterHistory);
     }
 
     function cementLayer() {
-        //_cementLayer(layer, setLayer, accTracker, setAccTracker, matcher);
+        if (layer === layerMax) return;
+        _cementLayer(layer, setLayer, letterHistory, accTracker, setAccTracker, matcher);
     }
 
     //exposure

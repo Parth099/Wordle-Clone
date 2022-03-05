@@ -7,13 +7,15 @@ function GuessBox() {
     //custom hook allows for a new abstraction layer
     const { letterHistory, accTracker, pushLetter, popLetter, cementLayer } = useLetterTracker("array", 6);
     //runs once on mount (empty deps), adds keypress listener
+
+    console.log(letterHistory, accTracker);
     useEffect(() => {
         const KeyDownEvent = function (e: KeyboardEvent) {
             if (e.key === "Enter") {
-                //cementLayer();
+                cementLayer();
             }
             if (e.key === "Backspace") {
-                //popLetter();
+                popLetter();
             }
             if (!/^[a-z]$/i.test(e.key)) {
                 //regex test for alphabet, i - ignorecase
@@ -24,7 +26,6 @@ function GuessBox() {
         };
 
         window.addEventListener("keydown", KeyDownEvent);
-        console.log("!");
         return () => {
             window.removeEventListener("keydown", KeyDownEvent);
         };

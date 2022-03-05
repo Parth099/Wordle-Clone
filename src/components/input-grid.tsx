@@ -1,26 +1,34 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import useLetterTracker from "../helpers/useLetterTracker";
 
 //compoment for the guess grid (shows what you got right / wrong)
 
 function GuessBox() {
-    const KeyDownEvent = function (e: KeyboardEvent) {
-        if (e.key === "Enter") {
-            console.log("enter");
-            //do something
-        }
-        if (!/^[a-z]$/i.test(e.key)) {
-            //regex test for alphabet, i - ignorecase
-            return;
-        }
-
-        const keypress = e.key.toLowerCase();
-    };
-
+    //custom hook allows for a new abstraction layer
+    const { letterHistory, accTracker, pushLetter, popLetter, cementLayer } = useLetterTracker("array", 6);
     //runs once on mount (empty deps), adds keypress listener
     useEffect(() => {
-        window.removeEventListener("keydown", KeyDownEvent); //ensures an event can ONLY be injected once
+        const KeyDownEvent = function (e: KeyboardEvent) {
+            if (e.key === "Enter") {
+                //cementLayer();
+            }
+            if (e.key === "Backspace") {
+                //popLetter();
+            }
+            if (!/^[a-z]$/i.test(e.key)) {
+                //regex test for alphabet, i - ignorecase
+                return;
+            }
+            const keypress = e.key.toLowerCase(); //at this point we know its either a lc letter or up letter
+            pushLetter(keypress);
+        };
+
         window.addEventListener("keydown", KeyDownEvent);
-    }, []);
+        console.log("!");
+        return () => {
+            window.removeEventListener("keydown", KeyDownEvent);
+        };
+    }, [letterHistory, accTracker, pushLetter, popLetter, cementLayer]);
 
     return (
         <div className="grid-container mx-auto w-min mt-4 px-9">

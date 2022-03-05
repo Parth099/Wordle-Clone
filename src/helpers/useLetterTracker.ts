@@ -20,9 +20,10 @@ import WordleApi from "../wordle-logic/wordleApi";
     
     Technical Outline:
         We need 3 pieces of state
-            1. Correctness 2D array
-            2. User guess 2d Array
+            1. Correctness object
+            2. User guess object
             3. Current Layer
+
 
 
 */
@@ -33,9 +34,43 @@ enum LetterStatus {
     CORRECT,
 }
 
-function _pushLetter(letter: string, layer: number, letterArr: Array<string[]>, setLetterArr: Function) {}
-function _popLetter(layer: number, letterArr: Array<string[]>, setLetterArr: Function) {}
-function _cementLayer(layer: number, setLayer: Function, accArray: Array<LetterStatus[]>, setAccArray: Function, matcher: Function) {}
+const emptyNumSpace = -1;
+const emptyString = "";
+
+//index type for type-safety
+interface defaultObj<T> {
+    [prop: number]: T[];
+}
+
+function genDefaultObject<T>(layerMax: number, arrLength: number, defaultValue: T) {
+    const obj: defaultObj<T> = {};
+    for (let i = 0; i < layerMax; i++) {
+        obj[i] = new Array(arrLength).fill(defaultValue);
+    }
+
+    return obj;
+}
+
+//we will assume that all exposed calls are VALID calls.
+function _pushLetter(
+    letter: string,
+    layer: number,
+    letterHistory: defaultObj<string>,
+    setLetterHistory: React.Dispatch<React.SetStateAction<defaultObj<string>>>
+) {
+    const workingLayer = [...letterHistory[layer]];
+    const firstOpenIndex = workingLayer.indexOf(emptyString);
+    if (firstOpenIndex < 0) return; //no spots left to push
+
+    workingLayer[firstOpenIndex] = letter;
+    const newHistory = Object.assign({}, letterHistory);
+    newHistory[layer] = [...workingLayer];
+
+    setLetterHistory(newHistory);
+}
+function _popLetter(layer: number, letterHistory: defaultObj<string>, setLetterHistory: Function) {}
+
+function _cementLayer(layer: number, setLayer: Function, accTracker: defaultObj<LetterStatus>, setAccTracker: Function, matcher: Function) {}
 
 //exposed functions ONLY for outside calling
 
@@ -44,34 +79,28 @@ function useLetterTracker(targetWord: string, layerMax: number) {
     const matcher = API.checkAccuracy;
 
     //correctness array
-    const [accArray, setAccArray] = useState(
-        Array(layerMax)
-            .fill(0)
-            .map((row) => new Array<LetterStatus>(targetWord.length).fill(-1))
-    );
+    const [accTracker, setAccTracker] = useState(genDefaultObject(layerMax, targetWord.length, emptyNumSpace));
 
     //guess array
-    const [letterArr, setLetterArr] = useState(
-        Array(layerMax)
-            .fill(0)
-            .map((row) => new Array<string>(targetWord.length).fill(""))
-    );
-
+    let [letterHistory, setLetterHistory] = useState(() => {
+        return genDefaultObject(layerMax, targetWord.length, emptyString);
+    });
     const [layer, setLayer] = useState(0);
 
     function pushLetter(letter: string) {
-        _pushLetter(letter, layer, letterArr, setLetterArr);
+        _pushLetter(letter, layer, letterHistory, setLetterHistory);
     }
     function popLetter() {
-        _popLetter(layer, letterArr, setLetterArr);
+        return;
+        //_popLetter(layer, letterHistory, setLetterHistory);
     }
 
     function cementLayer() {
-        _cementLayer(layer, setLayer, accArray, setAccArray, matcher);
+        //_cementLayer(layer, setLayer, accTracker, setAccTracker, matcher);
     }
 
     //exposure
-    return [pushLetter, popLetter, cementLayer];
+    return { letterHistory, accTracker, pushLetter, popLetter, cementLayer };
 }
 
 export default useLetterTracker;

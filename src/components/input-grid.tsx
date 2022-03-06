@@ -1,5 +1,4 @@
-import { type } from "@testing-library/user-event/dist/type";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useLetterTracker from "../helpers/useLetterTracker";
 
 //compoment for the guess grid (shows what you got right / wrong)
@@ -59,7 +58,7 @@ function GuessBox() {
 
     return (
         <div className="grid-container mx-auto w-min mt-4 px-9">
-            <div className={`guess-box grid grid-cols-8 grid-rows-8 gap-2 w-[500px] h-[${100 * numGuess}px]`}>
+            <div className={`guess-box grid grid-cols-${secretWord.length} grid-rows-${numGuess} gap-2 w-[500px] h-[${100 * numGuess}px]`}>
                 {new Array(numGuess).fill(0).map(function (_, idx) {
                     const board: JSX.Element[] = [];
 

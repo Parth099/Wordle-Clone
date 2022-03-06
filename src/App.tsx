@@ -9,7 +9,9 @@ function App() {
     return (
         <React.Fragment>
             <NavBar name="Wordle" />
-            <GuessBox />
+            <div>
+                <GuessBox />
+            </div>
         </React.Fragment>
     );
 }

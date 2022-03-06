@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { json } from "stream/consumers";
 import useLetterTracker from "../helpers/useLetterTracker";
 import wordList from "../helpers/word_list.json";
 
@@ -6,9 +7,33 @@ import wordList from "../helpers/word_list.json";
 
 function GuessBox() {
     //custom hook allows for a new abstraction layer
-    const secretWord = "fortnite";
+    const [secretWord, setSecretWord] = useState("array");
     const numGuess = 6;
-    const { letterHistory, accTracker, pushLetter, popLetter, cementLayer } = useLetterTracker(secretWord.toLowerCase(), numGuess);
+
+    const [validWordList, setValidWordList] = useState<string[]>([]);
+    console.log(secretWord);
+
+    const min = 5;
+    const max = 9;
+
+    useEffect(() => {
+        const length = Math.floor(Math.random() * (max - min) + min); //picks int between 5 and 8 inclusive
+        const wordArr: string[] = [];
+        for (const property in wordList) {
+            //console.log(property);
+            if (property.length === length) {
+                wordArr.push(property);
+            }
+        }
+        const randword = wordArr[Math.floor(Math.random() * wordArr.length)];
+        setSecretWord(randword);
+        setValidWordList(wordArr);
+
+        //console.log(secretWord);
+    }, []);
+
+    const { letterHistory, accTracker, pushLetter, popLetter, cementLayer } = useLetterTracker(secretWord, numGuess, validWordList);
+
     //runs once on mount (empty deps), adds keypress listener
 
     useEffect(() => {
@@ -31,7 +56,7 @@ function GuessBox() {
         return () => {
             window.removeEventListener("keydown", KeyDownEvent);
         };
-    }, [letterHistory, accTracker, pushLetter, popLetter, cementLayer]);
+    }, [letterHistory, accTracker, pushLetter, popLetter, cementLayer, secretWord]);
 
     //render helpers
     const getColorClass = (correctness: number) => {

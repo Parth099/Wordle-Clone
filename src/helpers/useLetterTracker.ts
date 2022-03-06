@@ -94,13 +94,15 @@ function _cementLayer(
     accTracker: defaultObj<LetterStatus>,
     setAccTracker: setStateFunc<LetterStatus>,
     matcher: (s: string) => LetterStatus[],
-    layerMax: number
+    layerMax: number,
+    validWordList: string[]
 ) {
     const isCompletedLayer = letterHistory[layer].indexOf(emptyString) === -1;
     if (!isCompletedLayer) return;
 
     //adds up the letters
     const usrGuess = letterHistory[layer].reduce((prevLetter, currletter) => prevLetter + currletter, "");
+    if (validWordList.indexOf(usrGuess) < 0) return;
     const usrValidity = matcher(usrGuess);
 
     //state setup
@@ -118,7 +120,7 @@ function _cementLayer(
 
 //exposed functions ONLY for outside calling
 
-function useLetterTracker(targetWord: string, layerMax: number) {
+function useLetterTracker(targetWord: string, layerMax: number, validWordList: string[]) {
     //makes it so we cannot alter the api calls
     const API = new WordleApi(targetWord);
     const matcher = API.checkAccuracy.bind(API);
@@ -130,7 +132,14 @@ function useLetterTracker(targetWord: string, layerMax: number) {
     let [letterHistory, setLetterHistory] = useState(() => {
         return genDefaultObject(layerMax, targetWord.length, emptyString);
     });
+
     const [layer, setLayer] = useState(0);
+
+    if (targetWord.length !== letterHistory[0].length) {
+        //we need to reset the state
+        setLetterHistory(genDefaultObject(layerMax, targetWord.length, emptyString));
+        setAccTracker(genDefaultObject(layerMax, targetWord.length, emptyNumSpace));
+    }
 
     function pushLetter(letter: string) {
         if (layer === layerMax) return;
@@ -143,7 +152,7 @@ function useLetterTracker(targetWord: string, layerMax: number) {
 
     function cementLayer() {
         if (layer === layerMax) return;
-        _cementLayer(layer, setLayer, letterHistory, accTracker, setAccTracker, matcher, layerMax);
+        _cementLayer(layer, setLayer, letterHistory, accTracker, setAccTracker, matcher, layerMax, validWordList);
     }
 
     //exposure

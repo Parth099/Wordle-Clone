@@ -1,40 +1,15 @@
-import { useEffect, useState } from "react";
-import { json } from "stream/consumers";
+import { useEffect } from "react";
 import useLetterTracker from "../helpers/useLetterTracker";
-import wordList from "../helpers/word_list.json";
 
 //compoment for the guess grid (shows what you got right / wrong)
 
 function GuessBox() {
-    //custom hook allows for a new abstraction layer
-    const [secretWord, setSecretWord] = useState("array");
     const numGuess = 6;
 
-    const [validWordList, setValidWordList] = useState<string[]>([]);
-    console.log(secretWord);
+    //custom hook allows for a new abstraction layer
+    const { targetWord, letterHistory, accTracker, pushLetter, popLetter, cementLayer } = useLetterTracker(numGuess);
 
-    const min = 5;
-    const max = 9;
-
-    useEffect(() => {
-        const length = Math.floor(Math.random() * (max - min) + min); //picks int between 5 and 8 inclusive
-        const wordArr: string[] = [];
-        for (const property in wordList) {
-            //console.log(property);
-            if (property.length === length) {
-                wordArr.push(property);
-            }
-        }
-        const randword = wordArr[Math.floor(Math.random() * wordArr.length)];
-        setSecretWord(randword);
-        setValidWordList(wordArr);
-
-        //console.log(secretWord);
-    }, []);
-
-    const { letterHistory, accTracker, pushLetter, popLetter, cementLayer } = useLetterTracker(secretWord, numGuess, validWordList);
-
-    //runs once on mount (empty deps), adds keypress listener
+    console.log(letterHistory, accTracker);
 
     useEffect(() => {
         const KeyDownEvent = function (e: KeyboardEvent) {
@@ -54,9 +29,10 @@ function GuessBox() {
 
         window.addEventListener("keydown", KeyDownEvent);
         return () => {
+            //return is used to clean up and add the new pointers
             window.removeEventListener("keydown", KeyDownEvent);
         };
-    }, [letterHistory, accTracker, pushLetter, popLetter, cementLayer, secretWord]);
+    }, [letterHistory, accTracker, pushLetter, popLetter, cementLayer, targetWord]);
 
     //render helpers
     const getColorClass = (correctness: number) => {
@@ -84,10 +60,9 @@ function GuessBox() {
 
     return (
         <div className="grid-container mx-auto w-min mt-4 px-9">
-            <div className={`guess-box grid grid-cols-${secretWord.length} grid-rows-${numGuess} gap-2 w-[500px] h-[${100 * numGuess}px]`}>
+            <div className={`guess-box grid grid-cols-${targetWord.length} grid-rows-${numGuess} gap-2 w-[500px] h-[${100 * numGuess}px]`}>
                 {new Array(numGuess).fill(0).map(function (_, idx) {
                     const board: JSX.Element[] = [];
-
                     letterHistory[idx].forEach((value, sidx) => {
                         board.push(
                             <div className="square" key={sidx + "" + idx}>

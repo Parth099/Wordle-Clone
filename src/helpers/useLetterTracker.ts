@@ -1,5 +1,6 @@
 import { useState } from "react";
 import WordleApi from "../wordle-logic/wordleApi";
+import useWordSelector from "./useWordSelector";
 
 /*
     Outline:
@@ -94,15 +95,14 @@ function _cementLayer(
     accTracker: defaultObj<LetterStatus>,
     setAccTracker: setStateFunc<LetterStatus>,
     matcher: (s: string) => LetterStatus[],
-    layerMax: number,
-    validWordList: string[]
+    layerMax: number
 ) {
     const isCompletedLayer = letterHistory[layer].indexOf(emptyString) === -1;
     if (!isCompletedLayer) return;
 
     //adds up the letters
     const usrGuess = letterHistory[layer].reduce((prevLetter, currletter) => prevLetter + currletter, "");
-    if (validWordList.indexOf(usrGuess) < 0) return;
+    //if (validWordList.indexOf(usrGuess) < 0) return;
     const usrValidity = matcher(usrGuess);
 
     //state setup
@@ -120,13 +120,16 @@ function _cementLayer(
 
 //exposed functions ONLY for outside calling
 
-function useLetterTracker(targetWord: string, layerMax: number, validWordList: string[]) {
+function useLetterTracker(layerMax: number) {
     //makes it so we cannot alter the api calls
+
+    const targetWord = useWordSelector();
+
     const API = new WordleApi(targetWord);
     const matcher = API.checkAccuracy.bind(API);
 
     //correctness array
-    const [accTracker, setAccTracker] = useState(genDefaultObject(layerMax, targetWord.length, emptyNumSpace));
+    const [accTracker, setAccTracker] = useState(() => genDefaultObject(layerMax, targetWord.length, emptyNumSpace));
 
     //guess array
     let [letterHistory, setLetterHistory] = useState(() => {
@@ -134,12 +137,6 @@ function useLetterTracker(targetWord: string, layerMax: number, validWordList: s
     });
 
     const [layer, setLayer] = useState(0);
-
-    if (targetWord.length !== letterHistory[0].length) {
-        //we need to reset the state
-        setLetterHistory(genDefaultObject(layerMax, targetWord.length, emptyString));
-        setAccTracker(genDefaultObject(layerMax, targetWord.length, emptyNumSpace));
-    }
 
     function pushLetter(letter: string) {
         if (layer === layerMax) return;
@@ -152,11 +149,16 @@ function useLetterTracker(targetWord: string, layerMax: number, validWordList: s
 
     function cementLayer() {
         if (layer === layerMax) return;
-        _cementLayer(layer, setLayer, letterHistory, accTracker, setAccTracker, matcher, layerMax, validWordList);
+        _cementLayer(layer, setLayer, letterHistory, accTracker, setAccTracker, matcher, layerMax);
     }
 
-    //exposure
-    return { letterHistory, accTracker, pushLetter, popLetter, cementLayer };
+    if (targetWord.length !== letterHistory[0].length) {
+        //we need to reset the state
+        setLetterHistory(genDefaultObject(layerMax, targetWord.length, emptyString));
+        setAccTracker(genDefaultObject(layerMax, targetWord.length, emptyNumSpace));
+    }
+
+    return { targetWord, letterHistory, accTracker, pushLetter, popLetter, cementLayer }; //exposure
 }
 
 export default useLetterTracker;

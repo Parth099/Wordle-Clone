@@ -1,6 +1,3 @@
-from pickle import TRUE
-
-
 def isValidWord(s: str) -> bool:
     if not s.isalnum():
         return False

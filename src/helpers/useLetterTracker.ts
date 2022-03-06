@@ -23,9 +23,6 @@ import WordleApi from "../wordle-logic/wordleApi";
             1. Correctness object
             2. User guess object
             3. Current Layer
-
-
-
 */
 type setStateFunc<T> = React.Dispatch<React.SetStateAction<defaultObj<T>>>;
 

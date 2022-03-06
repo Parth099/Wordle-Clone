@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import useLetterTracker from "../helpers/useLetterTracker";
+import wordList from "../helpers/word_list.json";
 
 //compoment for the guess grid (shows what you got right / wrong)
 
